@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Salon Studio Pro V5</title>
+    <style>
+        :root {
+            --bg-color: #0b111e;
+            --card-bg: #162032;
+            --text-color: #ffffff;
+            --border-color: #2a3a54;
+            --btn-blue: #2563eb;
+            --btn-green: #16a34a;
+            --btn-red: #dc2626;
+            --btn-purple: #9333ea;
+            --btn-yellow: #ca8a04;
+            --text-muted: #94a3b8;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        body.theme-claro {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --border-color: #e2e8f0;
+            --text-muted: #64748b;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-rosa {
+            --bg-color: #fff0f5;
+            --card-bg: #ffffff;
+            --text-color: #4a154b;
+            --border-color: #fbcfe8;
+            --btn-blue: #db2777;
+            --text-muted: #831843;
+            --shadow: 0 10px 25px -5px rgba(219, 39, 119, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 14px;
+            display: flex;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        button {
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s ease, filter 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        .btn-blue { background-color: var(--btn-blue); color: #fff; }
+        .btn-green { background-color: var(--btn-green); color: #fff; }
+        .btn-red { background-color: var(--btn-red); color: #fff; }
+        .btn-purple { background-color: var(--btn-purple); color: #fff; }
+        .btn-yellow { background-color: var(--btn-yellow); color: #000; }
+        .btn-secondary { background-color: var(--border-color); color: var(--text-color); }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Canvas visual style */
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            background-color: #000;
+            border-radius: 14px;
+            border: 2px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+        }
+
+        /* Tabs and Carousel */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .tabs button {
+            width: auto;
+            white-space: nowrap;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .carousel {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 4px 0;
+        }
+
+        .carousel-card {
+            min-width: 100px;
+            max-width: 100px;
+            background-color: rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .carousel-card img, .carousel-card .color-box {
+            width: 65px;
+            height: 65px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        /* Float Menu and Panels */
+        .popover-menu {
+            position: absolute;
+            width: 210px;
+            background-color: #ffffff;
+            color: #000;
+            border-radius: 14px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            padding: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .popover-menu button {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            padding: 8px;
+            font-size: 0.85rem;
+        }
+
+        .floating-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 285px;
+            background-color: var(--card-bg);
+            border: 2px solid var(--btn-purple);
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            z-index: 200;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background-color: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .panel-body {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .slider-group div {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+        }
+
+        /* Printable Ticket Rules */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #ticket-printable, #ticket-printable * {
+                visibility: visible;
+            }
+            #ticket-printable {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+    <script>
+    // GUARDAR Y CARGAR CONFIGURACION DEFINITIVA DE TEMA Y NEGOCIO
+    function changeTheme(theme) {
+        document.body.className = 'theme-' + theme;
+        localStorage.setItem("salon_theme", theme);
+        localStorage.setItem("salon_theme_selector", theme);
+    }
+
+    function updateBusinessName(name) {
+        const titleDisplay = document.getElementById('business-title-display');
+        if (titleDisplay) titleDisplay.textContent = name;
+        localStorage.setItem("salon_business_name", name);
+    }
+
+    function loadSavedConfig() {
+        const savedTheme = localStorage.getItem("salon_theme") || "oscuro";
+        document.body.className = 'theme-' + savedTheme;
+        
+        const selector = document.getElementById('theme-selector');
+        if (selector) selector.value = savedTheme;
+
+        const savedName = localStorage.getItem("salon_business_name");
+        if (savedName) {
+            const inputName = document.getElementById('business-name-input');
+            const titleDisplay = document.getElementById('business-title-display');
+            if (inputName) inputName.value = savedName;
+            if (titleDisplay) titleDisplay.textContent = savedName;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSavedConfig);
+</script>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- PANTALLA CONFIGURACIÓN -->
+    <div id="screen-config" class="screen active">
+        <div class="card">
+            <h2 id="business-title-display">Salon Studio Pro V5</h2>
+            <div>
+                <label>Tema de Interfaz</label>
+                <select id="theme-selector" onchange="changeTheme(this.value)">
+                    <option value="oscuro">Oscuro (Noche)</option>
+                    <option value="claro">Claro (Limpio)</option>
+                    <option value="rosa">Rosa Glam</option>
+                </select>
+            </div>
+            <div>
+                <label>Nombre del Negocio</label>
+                <input type="text" id="business-name-input" value="Salon Studio Pro" oninput="updateBusinessName(this.value)">
+            </div>
+            <button class="btn-blue" style="padding: 14px;" onclick="switchScreen('work')">Ir a Pantalla de Trabajo ➔</button>
+        </div>
+
+        <div class="card">
+            <h2>Crear Nuevo Estilo</h2>
+            
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <video id="catalog-camera-preview" style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover; background: #000; display: none;" autoplay playsinline></video>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                    <button class="btn-secondary" onclick="triggerCatalogCamera()">📸 Foto Referencia</button>
+                    <button class="btn-secondary" onclick="document.getElementById('catalog-file-input').click()">📁 Subir Galería</button>
+                    <input type="file" id="catalog-file-input" accept="image/*" style="display: none;" onchange="handleCatalogFile(event)">
+                </div>
+            </div>
+
+            <div>
+                <label>Nombre del Servicio</label>
+                <input type="text" id="style-name-input" placeholder="Ej. Corte Bob Redondeado">
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <label>Tipo</label>
+                    <select id="style-type-select">
+                        <option value="Cortes">Cortes</option>
+                        <option value="Tintes">Tintes</option>
+                        <option value="Maquillaje">Maquillaje</option>
+                        <option value="Peinados">Peinados</option>
+                        <option value="Cejas">Cejas</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Precio ($)</label>
+                    <input type="number" id="style-price-input" placeholder="0.00">
+                </div>
+            </div>
+
+            <div class="grid-2" style="align-items: center;">
+                <div>
+                    <label>Color Tinte/Sombra</label>
+                    <input type="color" id="style-color-input" value="#ff0055" style="height: 42px; padding: 2px;">
+                </div>
+                <div style="font-size: 0.8rem; font-weight: 600; text-align: center;" id="photo-indicator">
+                    Sin Foto Ref.
+                </div>
+            </div>
+
+            <button class="btn-green" style="padding: 12px;" onclick="saveStyleToCatalog()">Guardar en Catálogo</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA TRABAJO -->
+    <div id="screen-work" class="screen">
+        <button class="btn-secondary" style="width: auto; align-self: flex-start;" onclick="switchScreen('config')">⚙️ Configuración</button>
+
+        <!-- TARJETA CLIENTE -->
+        <div class="card">
+            <h2>Cliente & Vista Previa</h2>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">* Doble toque en la cara para editar zona con IA</p>
+
+            <div>
+                <label>Cámara Cliente Seleccionable</label>
+                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                    <select id="client-camera-select"></select>
+                    <button class="btn-secondary" style="width: 45px;" onclick="initCameraDevices()">🔄</button>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <button class="btn-blue" id="btn-toggle-cam" onclick="toggleClientCamera()">Activar Cámara</button>
+                <button class="btn-secondary" onclick="document.getElementById('client-file-input').click()">Subir Foto</button>
+                <input type="file" id="client-file-input" accept="image/*" style="display: none;" onchange="handleClientFile(event)">
+            </div>
+
+            <div id="camera-stream-container" style="display: none; flex-direction: column; gap: 8px;">
+                <video id="client-video" style="width: 100%; max-height: 250px; border-radius: 10px; background: #000; object-fit: cover;" autoplay playsinline></video>
+                <button class="btn-green" onclick="captureClientPhoto()">Capturar Foto</button>
+            </div>
+
+            <div class="canvas-wrapper">
+                <canvas id="main-canvas" width="400" height="500"></canvas>
+                
+                <!-- MENU FLOTANTE SELECCION ZONA -->
+                <div id="popover-menu" class="popover-menu">
+                    <span style="font-weight: bold; font-size: 0.8rem; text-align: center;">¿Qué editarás aquí?</span>
+                    <button onclick="selectZone('cabello')">Cabello</button>
+                    <button onclick="selectZone('labios')">Labios</button>
+                    <button onclick="selectZone('sombras')">Sombras</button>
+                    <button onclick="selectZone('rubor')">Rubor</button>
+                    <button onclick="selectZone('cejas')">Cejas</button>
+                    <button onclick="selectZone('contorno')">Contorno</button>
+                    <button class="btn-red" style="color: white;" onclick="closePopover()">Cancelar</button>
+                </div>
+            </div>
+
+            <p style="font-size: 0.7rem; text-align: center; opacity: 0.7;">Doble toque rápido edita con IA | Arrastra para mover estilo superpuesto</p>
+
+            <!-- CONTROLES DESLIZABLES (GRILLA DE 3 COLUMNAS) -->
+            <div class="grid-3">
+                <div class="slider-group">
+                    <div><label>Escala</label><span id="val-scale">1.0</span></div>
+                    <input type="range" id="sld-scale" min="0.2" max="3" step="0.05" value="1" oninput="redrawCanvas()">
+                </div>
+                <div class="slider-group">
+                    <div><label>Opacidad</label><span id="val-opacity">1.0</span></div>
+                    <input type="range" id="sld-opacity" min="0" max="1" step="0.05" value="1" oninput="redrawCanvas()">
+                </div>
+                <div class="slider-group">
+                    <div><label>Suavizado</label><span id="val-blur">0</span></div>
+                    <input type="range" id="sld-blur" min="0" max="10" step="0.5" value="0" oninput="redrawCanvas()">
+                </div>
+                <div class="slider-group">
+                    <div><label>Brillo</label><span id="val-brightness">100</span></div>
+                    <input type="range" id="sld-brightness" min="0" max="200" step="1" value="100" oninput="redrawCanvas()">
+                </div>
+                <div class="slider-group">
+                    <div><label>Contraste</label><span id="val-contrast">100</span></div>
+                    <input type="range" id="sld-contrast" min="0" max="200" step="1" value="100" oninput="redrawCanvas()">
+                </div>
+                <div class="slider-group">
+                    <div><label>Tono Rojo</label><span id="val-red">0</span></div>
+                    <input type="range" id="sld-red" min="-100" max="100" step="1" value="0" oninput="redrawCanvas()">
+                </div>
+                <div class="slider-group">
+                    <div><label>Tono Azul</label><span id="val-blue">0</span></div>
+                    <input type="range" id="sld-blue" min="-100" max="100" step="1" value="0" oninput="redrawCanvas()">
+                </div>
+                <div class="slider-group">
+                    <div><label>Zoom</label><span id="val-zoom">1.0</span></div>
+                    <input type="range" id="sld-zoom" min="0.5" max="2.5" step="0.05" value="1" oninput="redrawCanvas()">
+                </div>
+                <div class="slider-group">
+                    <div><label>Rotación</label><span id="val-rot">0°</span></div>
+                    <input type="range" id="sld-rot" min="-45" max="45" step="1" value="0" oninput="redrawCanvas()">
+                </div>
+            </div>
+
+            <button class="btn-purple" style="padding: 12px;" onclick="processGlobalAI()">✨ Procesar Motor IA Global</button>
+
+            <div class="grid-2">
+                <button class="btn-red" onclick="clearAllOverlays()">Limpiar Todo</button>
+                <button class="btn-green" onclick="exportCanvasPNG()">Exportar PNG</button>
+            </div>
+
+            <button class="btn-yellow" onclick="undoLastAction()">↩ Deshacer Último Cambio</button>
+        </div>
+        <!-- TARJETA ESTILOS DEL CATÁLOGO -->
+        <div class="card">
+            <h2>Estilos del Catálogo</h2>
+            
+            <div class="tabs" id="catalog-tabs">
+                <button class="btn-blue" onclick="filterCatalog('Todos', this)">Todos</button>
+                <button class="btn-secondary" onclick="filterCatalog('Cortes', this)">Cortes</button>
+                <button class="btn-secondary" onclick="filterCatalog('Tintes', this)">Tintes</button>
+                <button class="btn-secondary" onclick="filterCatalog('Maquillaje', this)">Maquillaje</button>
+                <button class="btn-secondary" onclick="filterCatalog('Peinados', this)">Peinados</button>
+                <button class="btn-secondary" onclick="filterCatalog('Cejas', this)">Cejas</button>
+            </div>
+
+            <div class="carousel" id="catalog-carousel">
+                <!-- Se puebla dinámicamente -->
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <select id="filtered-styles-select"></select>
+                <button class="btn-green" style="width: auto; white-space: nowrap;" onclick="addSelectedStyleToBudget()">+ Añadir</button>
+            </div>
+        </div>
+
+        <!-- TARJETA PRESUPUESTO -->
+        <div class="card">
+            <h2>Presupuesto</h2>
+            
+            <div class="grid-2">
+                <input type="text" id="custom-service-name" placeholder="Servicio personal">
+                <input type="number" id="custom-service-price" placeholder="Precio ($)">
+            </div>
+            <button class="btn-secondary" onclick="addCustomService()">+ Agregar Personalizado</button>
+
+            <div id="budget-list" style="display: flex; flex-direction: column; gap: 6px;">
+                <!-- Filas de servicios agregados -->
+            </div>
+
+            <div style="text-align: right; font-size: 1.5rem; font-weight: bold; color: var(--btn-green);" id="budget-total">
+                Total: $0.00
+            </div>
+
+            <div class="grid-2">
+                <button class="btn-green" onclick="generateTicket()">Generar Ticket</button>
+                <button class="btn-secondary" onclick="generateTicket()">Ver Opciones Ticket</button>
+            </div>
+
+            <!-- CONTENEDOR TICKET IMPRIMIBLE -->
+            <div id="ticket-printable" style="display: none; background: #ffffff; color: #000000; border: 2px dashed #16a34a; border-radius: 10px; padding: 16px; margin-top: 10px;">
+                <h3 style="text-align: center; margin-bottom: 4px;" id="ticket-business-name">Salon Studio Pro</h3>
+                <p style="text-align: center; font-size: 0.75rem; margin-bottom: 12px;" id="ticket-date">--/--/----</p>
+                
+                <div id="ticket-items" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; padding: 8px 0;">
+                </div>
+
+                <div style="text-align: right; font-size: 1.2rem; font-weight: bold; margin-top: 10px;" id="ticket-total-display">
+                    Total: $0.00
+                </div>
+
+                <div class="no-print grid-2" style="margin-top: 14px;">
+                    <button class="btn-green" onclick="printOnlyTicket()">🖨️ Imprimir Solo Ticket</button>
+                    <button class="btn-secondary" onclick="document.getElementById('ticket-printable').style.display='none'">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- PANEL FLOTANTE DE EDICIÓN DE ZONA (IA) -->
+<div id="floating-panel" class="floating-panel">
+    <div class="panel-header" id="panel-drag-header">
+        <span id="panel-zone-title">Zona: Cabello</span>
+        <span style="cursor: pointer;" onclick="closeFloatingPanel()">✖</span>
+    </div>
+    <div class="panel-body">
+        <div>
+            <label>Color Tinte / Maquillaje</label>
+            <input type="color" id="zone-color-input" value="#ff0055" style="height: 54px; padding: 2px; cursor: pointer;">
+        </div>
+        <div class="slider-group">
+            <div><label>Intensidad</label><span id="val-zone-intensity">60%</span></div>
+            <input type="range" id="sld-zone-intensity" min="10" max="100" value="60" oninput="document.getElementById('val-zone-intensity').innerText=this.value+'%'">
+        </div>
+        <div class="slider-group">
+            <div><label>Tamaño Pincel</label><span id="val-zone-brush">80px</span></div>
+            <input type="range" id="sld-zone-brush" min="10" max="200" value="80" oninput="document.getElementById('val-zone-brush').innerText=this.value+'px'">
+        </div>
+        <button class="btn-purple" style="padding: 10px;" onclick="applyZoneAI()">✨ Aplicar Inteligencia Artificial</button>
+        <div id="zone-log-text" style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">Listo para procesar</div>
+    </div>
+</div>
+
+<script>
+    // ESTADO GLOBAL DE LA APLICACIÓN
+   const RENDER_BASE_URL = 'https://servidor-salon-backend-1.onrender.com';
+    let catalog = JSON.parse(localStorage.getItem('salon_v5_catalog') || '[]');
+    let currentTheme = 'oscuro';
+    let businessName = 'Salon Studio Pro';
+    
+    let clientImage = null; // HTMLImageElement
+    let styleOverlayImage = null; // HTMLImageElement
+    let currentStyleData = null; // Objeto de estilo seleccionado
+    
+    let styleOffsetX = 0;
+    let styleOffsetY = 0;
+    let isDraggingStyle = false;
+    let dragStartX = 0, dragStartY = 0;
+
+    let activeZone = null;
+    let zoneClickCoords = { x: 0, y: 0 };
+    let historyStack = [];
+
+    let activeStream = null;
+    let catalogRefImageData = null;
+    let budgetItems = [];
+
+    // INICIALIZACIÓN
+    window.addEventListener('DOMContentLoaded', () => {
+        initCameraDevices();
+        renderCatalogCarousel('Todos');
+        updateFilteredSelect('Todos');
+        makePanelDraggable();
+        setupCanvasInteractions();
+    });
+
+    function switchScreen(screenName) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        if (screenName === 'config') {
+            document.getElementById('screen-config').classList.add('active');
+        } else {
+            document.getElementById('screen-work').classList.add('active');
+            initCameraDevices();
+            redrawCanvas();
+        }
+    }
+
+    function changeTheme(theme) {
+        currentTheme = theme;
+        document.body.className = '';
+        if (theme !== 'oscuro') {
+            document.body.classList.add('theme-' + theme);
+        }
+    }
+
+    function updateBusinessName(val) {
+        businessName = val || 'Salon Studio Pro';
+        document.getElementById('business-title-display').innerText = businessName;
+        document.getElementById('ticket-business-name').innerText = businessName;
+    }
+
+    // CAMARAS DISPONIBLES (REQUISITO 5)
+    async function initCameraDevices() {
+        const select = document.getElementById('client-camera-select');
+        select.innerHTML = '<option value="">Buscando cámaras...</option>';
+        try {
+            const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            tempStream.getTracks().forEach(track => track.stop());
+
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            
+            select.innerHTML = '';
+            videoDevices.forEach((device, idx) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                let label = device.label || `Cámara ${idx + 1}`;
+                option.text = label;
+                select.appendChild(option);
+            });
+        } catch (err) {
+            select.innerHTML = '<option value="">Error o Permiso denegado</option>';
+        }
+    }
+
+    async function toggleClientCamera() {
+        const container = document.getElementById('camera-stream-container');
+        const btn = document.getElementById('btn-toggle-cam');
+        const video = document.getElementById('client-video');
+
+        if (activeStream) {
+            activeStream.getTracks().forEach(t => t.stop());
+            activeStream = null;
+            video.srcObject = null;
+            container.style.display = 'none';
+            btn.innerText = 'Activar Cámara';
+            btn.className = 'btn-blue';
+        } else {
+            const deviceId = document.getElementById('client-camera-select').value;
+            const constraints = deviceId ? { video: { deviceId: { exact: deviceId } } } : { video: true };
+            try {
+                activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = activeStream;
+                container.style.display = 'flex';
+                btn.innerText = 'Apagar Cámara';
+                btn.className = 'btn-red';
+            } catch (e) {
+                alert('No se pudo acceder a la cámara seleccionada.');
+            }
+        }
+    }
+
+    function captureClientPhoto() {
+        const video = document.getElementById('client-video');
+        if (!video.videoWidth) return;
+
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = video.videoWidth;
+        tmpCanvas.height = video.videoHeight;
+        const ctx = tmpCanvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+
+        const img = new Image();
+        img.onload = () => {
+            saveToHistory();
+            clientImage = img;
+            toggleClientCamera();
+            redrawCanvas();
+        };
+        img.src = tmpCanvas.toDataURL('image/jpeg', 0.9);
+    }
+
+    function handleClientFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                saveToHistory();
+                clientImage = img;
+                redrawCanvas();
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // CATÁLOGO DE ESTILOS
+    function handleCatalogFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            catalogRefImageData = evt.target.result;
+            document.getElementById('photo-indicator').innerText = '✅ Foto Lista';
+            document.getElementById('photo-indicator').style.color = '#16a34a';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function triggerCatalogCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            const video = document.getElementById('catalog-camera-preview');
+            video.style.display = 'block';
+            video.srcObject = stream;
+
+            setTimeout(() => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                catalogRefImageData = canvas.toDataURL('image/jpeg', 0.85);
+
+                stream.getTracks().forEach(t => t.stop());
+                video.style.display = 'none';
+                document.getElementById('photo-indicator').innerText = '✅ Foto Tomada';
+                document.getElementById('photo-indicator').style.color = '#16a34a';
+            }, 2500);
+        } catch (e) {
+            alert('Cámara no disponible para la captura.');
+        }
+    }
+
+    function saveStyleToCatalog() {
+        const name = document.getElementById('style-name-input').value.trim();
+        const type = document.getElementById('style-type-select').value;
+        const price = parseFloat(document.getElementById('style-price-input').value) || 0;
+        const color = document.getElementById('style-color-input').value;
+
+        if (!name) {
+            alert('Ingresa el nombre del estilo.');
+            return;
+        }
+
+        const newStyle = {
+            id: Date.now(),
+            name,
+            type,
+            price,
+            color,
+            refImage: catalogRefImageData
+        };
+
+        catalog.push(newStyle);
+        localStorage.setItem('salon_v5_catalog', JSON.stringify(catalog));
+
+        document.getElementById('style-name-input').value = '';
+        document.getElementById('style-price-input').value = '';
+        catalogRefImageData = null;
+        document.getElementById('photo-indicator').innerText = 'Sin Foto Ref.';
+        document.getElementById('photo-indicator').style.color = 'inherit';
+
+        renderCatalogCarousel('Todos');
+        updateFilteredSelect('Todos');
+        alert('Estilo guardado con éxito.');
+    }
+
+    function filterCatalog(type, btn) {
+        document.querySelectorAll('#catalog-tabs button').forEach(b => {
+            b.className = 'btn-secondary';
+        });
+        if (btn) btn.className = 'btn-blue';
+
+        renderCatalogCarousel(type);
+        updateFilteredSelect(type);
+    }
+
+    function renderCatalogCarousel(type) {
+        const container = document.getElementById('catalog-carousel');
+        container.innerHTML = '';
+
+        const items = type === 'Todos' ? catalog : catalog.filter(c => c.type === type);
+
+        if (items.length === 0) {
+            container.innerHTML = '<span style="font-size:0.8rem; color:var(--text-muted);">Sin estilos guardados</span>';
+            return;
+        }
+
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'carousel-card';
+            card.onclick = () => applyCatalogStyle(item);
+
+            if (item.refImage) {
+                card.innerHTML = `<img src="${item.refImage}" alt="${item.name}">`;
+            } else {
+                card.innerHTML = `<div class="color-box" style="background:${item.color};"></div>`;
+            }
+
+            card.innerHTML += `<div style="font-size:0.75rem; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">${item.name}</div>
+                              <div style="font-size:0.7rem; color:var(--btn-green);">$${item.price.toFixed(2)}</div>`;
+            container.appendChild(card);
+        });
+    }
+
+    function updateFilteredSelect(type) {
+        const select = document.getElementById('filtered-styles-select');
+        select.innerHTML = '';
+        const items = type === 'Todos' ? catalog : catalog.filter(c => c.type === type);
+
+        items.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.text = `${item.name} - $${item.price.toFixed(2)}`;
+            select.appendChild(opt);
+        });
+    }
+
+    function applyCatalogStyle(style) {
+        currentStyleData = style;
+        styleOffsetX = 0;
+        styleOffsetY = 0;
+
+        if (style.refImage) {
+            const img = new Image();
+            img.onload = () => {
+                styleOverlayImage = img;
+                redrawCanvas();
+            };
+            img.src = style.refImage;
+        } else {
+            styleOverlayImage = null;
+            redrawCanvas();
+        }
+    }
+
+    // REDIBUJADO DEL CANVAS (REQUISITO 9)
+    function redrawCanvas() {
+        const canvas = document.getElementById('main-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Leer sliders
+        const scale = parseFloat(document.getElementById('sld-scale').value);
+        const opacity = parseFloat(document.getElementById('sld-opacity').value);
+        const blur = parseFloat(document.getElementById('sld-blur').value);
+        const brightness = parseFloat(document.getElementById('sld-brightness').value);
+        const contrast = parseFloat(document.getElementById('sld-contrast').value);
+        const redShift = parseInt(document.getElementById('sld-red').value);
+        const blueShift = parseInt(document.getElementById('sld-blue').value);
+        const zoom = parseFloat(document.getElementById('sld-zoom').value);
+        const rotDeg = parseFloat(document.getElementById('sld-rot').value);
+
+        // Actualizar valores en texto
+        document.getElementById('val-scale').innerText = scale.toFixed(2);
+        document.getElementById('val-opacity').innerText = opacity.toFixed(2);
+        document.getElementById('val-blur').innerText = blur;
+        document.getElementById('val-brightness').innerText = brightness;
+        document.getElementById('val-contrast').innerText = contrast;
+        document.getElementById('val-red').innerText = redShift;
+        document.getElementById('val-blue').innerText = blueShift;
+        document.getElementById('val-zoom').innerText = zoom.toFixed(2);
+        document.getElementById('val-rot').innerText = rotDeg + '°';
+
+        if (!clientImage) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#666';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Sin Foto de Cliente', canvas.width / 2, canvas.height / 2);
+            return;
+        }
+
+        // Ajustar tamaño natural por Zoom
+        const baseWidth = clientImage.naturalWidth || 400;
+        const baseHeight = clientImage.naturalHeight || 500;
+        canvas.width = baseWidth * zoom;
+        canvas.height = baseHeight * zoom;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+
+        // Aplicar transformación central (Rotación y Zoom)
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((rotDeg * Math.PI) / 180);
+        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) blur(${blur}px)`;
+
+        // Dibujar foto base del cliente
+        ctx.drawImage(clientImage, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+        ctx.restore();
+
+        // Capa de ajuste de Tonos (Rojo/Azul) si corresponde
+        if (redShift !== 0 || blueShift !== 0) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'color';
+            const r = redShift > 0 ? redShift * 2.5 : 0;
+            const b = blueShift > 0 ? blueShift * 2.5 : 0;
+            ctx.fillStyle = `rgb(${r}, 0, ${b})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+        }
+
+        // Si no hay estilo aplicado
+        if (!currentStyleData) return;
+
+        ctx.save();
+        ctx.globalAlpha = opacity;
+
+        if (styleOverlayImage) {
+            // Dibujar imagen de referencia encima con escala y arrastre
+            const sw = styleOverlayImage.width * scale * zoom;
+            const sh = styleOverlayImage.height * scale * zoom;
+            const cx = (canvas.width / 2) + styleOffsetX;
+            const cy = (canvas.height / 2) + styleOffsetY;
+
+            ctx.drawImage(styleOverlayImage, cx - (sw / 2), cy - (sh / 2), sw, sh);
+        } else if (currentStyleData.color) {
+            // Modo de fusión de color
+            ctx.globalCompositeOperation = 'color';
+            ctx.fillStyle = currentStyleData.color;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        ctx.restore();
+    }
+
+    // INTERACCIONES CON EL CANVAS Y MENÚ FLOTANTE (REQUISITO 7)
+    function setupCanvasInteractions() {
+        const canvas = document.getElementById('main-canvas');
+        let lastTap = 0;
+
+        canvas.addEventListener('pointerdown', (e) => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX - rect.left;
+            const clientY = e.clientY - rect.top;
+
+            if (tapLength < 300 && tapLength > 0) {
+                // DOBLE TOQUE DETECTADO
+                e.preventDefault();
+                showPopoverMenu(clientX, clientY);
+            } else {
+                // INICIO DE ARRASTRE DE ESTILO
+                isDraggingStyle = true;
+                dragStartX = clientX - styleOffsetX;
+                dragStartY = clientY - styleOffsetY;
+            }
+            lastTap = currentTime;
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            if (isDraggingStyle && styleOverlayImage) {
+                const rect = canvas.getBoundingClientRect();
+                styleOffsetX = (e.clientX - rect.left) - dragStartX;
+                styleOffsetY = (e.clientY - rect.top) - dragStartY;
+                requestAnimationFrame(redrawCanvas);
+            }
+        });
+
+        window.addEventListener('pointerup', () => {
+            isDraggingStyle = false;
+        });
+    }
+
+    function showPopoverMenu(x, y) {
+        const canvas = document.getElementById('main-canvas');
+        const popover = document.getElementById('popover-menu');
+        
+        // Calcular coordenadas en la imagen base
+        const scaleX = canvas.width / canvas.clientWidth;
+        const scaleY = canvas.height / canvas.clientHeight;
+        zoneClickCoords = { x: Math.round(x * scaleX), y: Math.round(y * scaleY) };
+
+        popover.style.left = `${Math.min(x, canvas.clientWidth - 220)}px`;
+        popover.style.top = `${Math.min(y, canvas.clientHeight - 250)}px`;
+        popover.style.display = 'flex';
+    }
+
+    function closePopover() {
+        document.getElementById('popover-menu').style.display = 'none';
+    }
+
+    function selectZone(zone) {
+        activeZone = zone;
+        closePopover();
+        
+        const panel = document.getElementById('floating-panel');
+        document.getElementById('panel-zone-title').innerText = `Zona: ${zone.toUpperCase()} (${zoneClickCoords.x}, ${zoneClickCoords.y})`;
+        panel.style.display = 'flex';
+    }
+function closeFloatingPanel() {
+        document.getElementById('floating-panel').style.display = 'none';
+    }
+
+    function makePanelDraggable() {
+        const panel = document.getElementById('floating-panel');
+        const header = document.getElementById('panel-drag-header');
+        let pX = 0, pY = 0, iX = 0, iY = 0;
+
+        header.onpointerdown = (e) => {
+            e.preventDefault();
+            iX = e.clientX;
+            iY = e.clientY;
+            document.onpointermove = (ev) => {
+                pX = iX - ev.clientX;
+                pY = iY - ev.clientY;
+                iX = ev.clientX;
+                iY = ev.clientY;
+                panel.style.top = (panel.offsetTop - pY) + "px";
+                panel.style.left = (panel.offsetLeft - pX) + "px";
+                panel.style.transform = "none";
+            };
+            document.onpointerup = () => {
+                document.onpointermove = null;
+                document.onpointerup = null;
+            };
+        };
+    }
+
+    // PETICIONES DE BACKEND CON RENDER - YA NO PIDE LICENCIA AQUI
+    async function applyZoneAI() {
+        if (!clientImage) {
+            alert('Carga una foto de cliente primero.');
+            return;
+        }
+
+        saveToHistory();
+        const log = document.getElementById('zone-log-text');
+        log.innerText = 'Procesando en Render...';
+
+        const canvas = document.getElementById('main-canvas');
+        const imageBase64Clean = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+        const licenciaReal = localStorage.getItem("app_licencia_key");
+
+        const payload = {
+            image: imageBase64Clean,
+            imagen: imageBase64Clean,
+            imagen_base64: imageBase64Clean,
+            zone: activeZone,
+            x: zoneClickCoords.x,
+            y: zoneClickCoords.y,
+            coord_x: Math.round(zoneClickCoords.x),
+            coord_y: Math.round(zoneClickCoords.y),
+            color: document.getElementById('zone-color-input').value,
+            intensity: parseInt(document.getElementById('sld-zone-intensity').value),
+            brushSize: parseInt(document.getElementById('sld-zone-brush').value),
+            licencia: licenciaReal
+        };
+
+        try {
+            const resp = await fetch(`${RENDER_BASE_URL}/api/editar_rasgos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await resp.json();
+            const imgResult = data.imagen_resultante || data.imagen_procesada || data.image || data.imagen;
+            if (imgResult) {
+                applyResultImage(imgResult);
+                log.innerText = '¡Aplicado con éxito!';
+                closeFloatingPanel();
+            } else {
+                throw new Error('Respuesta inválida');
+            }
+        } catch (err) {
+            console.error(err);
+            log.innerText = 'Error de conexión con servidor.';
+            alert('Error: ' + err.message);
+        }
+    }
+
+    async function processGlobalAI() {
+        if (!clientImage) {
+            alert('Carga una foto de cliente primero.');
+            return;
+        }
+
+        saveToHistory();
+        const canvas = document.getElementById('main-canvas');
+
+        const maxDim = 800;
+        let w = canvas.width;
+        let h = canvas.height;
+        if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+            else { w = Math.round((w * maxDim) / h); h = maxDim; }
+        }
+
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = w;
+        tmpCanvas.height = h;
+        tmpCanvas.getContext('2d').drawImage(canvas, 0, 0, w, h);
+        const imageBase64Clean = tmpCanvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+        const licenciaReal = localStorage.getItem("app_licencia_key");
+
+        const payload = {
+            image: imageBase64Clean,
+            imagen: imageBase64Clean,
+            imagen_base64: imageBase64Clean,
+            licencia: licenciaReal
+        };
+
+        try {
+            const resp = await fetch(`${RENDER_BASE_URL}/api/procesar_rostro`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await resp.json();
+            const imgResult = data.imagen_resultante || data.imagen_procesada || data.image || data.imagen;
+            if (imgResult) {
+                applyResultImage(imgResult);
+            } else {
+                alert('No se pudo procesar la imagen global.');
+            }
+        } catch (e) {
+            alert('Error en el servidor de IA: ' + e.message);
+        }
+    }
+
+    function applyResultImage(srcData) {
+        let finalSrc = srcData;
+        if (!finalSrc.startsWith('data:image')) {
+            finalSrc = 'data:image/jpeg;base64,' + finalSrc;
+        }
+        const img = new Image();
+        img.onload = () => {
+            clientImage = img;
+            redrawCanvas();
+        };
+        img.src = finalSrc;
+    }
+
+    function saveToHistory() {
+        if (clientImage) {
+            if (historyStack.length >= 10) historyStack.shift();
+            historyStack.push(clientImage.src);
+        }
+    }
+
+    function undoLastAction() {
+        if (historyStack.length === 0) {
+            alert('No hay cambios anteriores para deshacer.');
+            return;
+        }
+        const lastSrc = historyStack.pop();
+        const img = new Image();
+        img.onload = () => {
+            clientImage = img;
+            redrawCanvas();
+        };
+        img.src = lastSrc;
+    }
+
+    function clearAllOverlays() {
+        saveToHistory();
+        currentStyleData = null;
+        styleOverlayImage = null;
+        styleOffsetX = 0;
+        styleOffsetY = 0;
+        document.getElementById('sld-scale').value = 1;
+        document.getElementById('sld-opacity').value = 1;
+        document.getElementById('sld-blur').value = 0;
+        document.getElementById('sld-brightness').value = 100;
+        document.getElementById('sld-contrast').value = 100;
+        document.getElementById('sld-red').value = 0;
+        document.getElementById('sld-blue').value = 0;
+        document.getElementById('sld-zoom').value = 1;
+        document.getElementById('sld-rot').value = 0;
+        redrawCanvas();
+    }
+
+    function exportCanvasPNG() {
+        const canvas = document.getElementById('main-canvas');
+        if (!clientImage) return;
+        const link = document.createElement('a');
+        link.download = `salon-studio-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    function addSelectedStyleToBudget() {
+        const id = parseInt(document.getElementById('filtered-styles-select').value);
+        const style = catalog.find(s => s.id === id);
+        if (style) {
+            budgetItems.push({ name: style.name, price: style.price });
+            updateBudgetUI();
+        }
+    }
+
+    function addCustomService() {
+        const name = document.getElementById('custom-service-name').value.trim();
+        const price = parseFloat(document.getElementById('custom-service-price').value) || 0;
+        if (!name) return;
+        budgetItems.push({ name, price });
+        document.getElementById('custom-service-name').value = '';
+        document.getElementById('custom-service-price').value = '';
+        updateBudgetUI();
+    }
+
+    function removeBudgetItem(index) {
+        budgetItems.splice(index, 1);
+        updateBudgetUI();
+    }
+
+    function updateBudgetUI() {
+        const list = document.getElementById('budget-list');
+        list.innerHTML = '';
+        let total = 0;
+        budgetItems.forEach((item, idx) => {
+            total += item.price;
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:8px;';
+            row.innerHTML = `<span>${item.name}</span>
+                             <div style="display:flex; gap:10px; align-items:center;">
+                                <strong style="color:var(--btn-green);">$${item.price.toFixed(2)}</strong>
+                                <button class="btn-red" style="width:24px; height:24px; padding:0; border-radius:50%;" onclick="removeBudgetItem(${idx})">✕</button>
+                             </div>`;
+            list.appendChild(row);
+        });
+        document.getElementById('budget-total').innerText = `Total: $${total.toFixed(2)}`;
+    }
+
+    function generateTicket() {
+        if (budgetItems.length === 0) {
+            alert('Añade al menos un servicio al presupuesto para generar el ticket.');
+            return;
+        }
+        const ticketContainer = document.getElementById('ticket-printable');
+        const itemsContainer = document.getElementById('ticket-items');
+        itemsContainer.innerHTML = '';
+        let total = 0;
+        const now = new Date();
+        document.getElementById('ticket-date').innerText = now.toLocaleString();
+        budgetItems.forEach(item => {
+            total += item.price;
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.justifyContent = 'space-between';
+            row.innerHTML = `<span>${item.name}</span><span>$${item.price.toFixed(2)}</span>`;
+            itemsContainer.appendChild(row);
+        });
+        document.getElementById('ticket-total-display').innerText = `Total: $${total.toFixed(2)}`;
+        ticketContainer.style.display = 'block';
+    }
+
+    function printOnlyTicket() {
+        window.print();
+    }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<style>
+  #licencia-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: #0f172a; color: #f8fafc;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 9999999; font-family: system-ui, -apple-system, sans-serif;
+    padding: 20px; box-sizing: border-box; text-align: center;
+  }
+ .licencia-card {
+    background: #1e293b; padding: 25px; border-radius: 12px;
+    border: 1px solid #334155; width: 100%; max-width: 360px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  }
+ .licencia-input {
+    width: 100%; padding: 12px; margin: 15px 0;
+    background: #0f172a; border: 1px solid #334155;
+    color: #fff; border-radius: 8px; font-size: 13px;
+    box-sizing: border-box; text-align: center; font-family: monospace;
+  }
+ .licencia-btn {
+    width: 100%; padding: 12px; background: #2563eb; color: #fff;
+    border: none; border-radius: 8px; font-weight: bold;
+    cursor: pointer; margin-bottom: 10px; font-size: 14px;
+  }
+ .licencia-btn-mp {
+    background: #009ee3;
+  }
+ .licencia-msg { color: #ef4444; font-size: 13px; margin-top: 10px; }
+</style>
+
+<div id="licencia-overlay">
+  <div class="licencia-card">
+    <h2 style="margin-top:0;">💈 Salón Studio Pro</h2>
+    <p style="color: #94a3b8; font-size: 14px;">Ingresa tu clave de activación para abrir la aplicación.</p>
+
+    <input type="text" id="licencia-key-input" class="licencia-input" placeholder="GEN-2026-10-19-XXXXXXXXXXXX">
+    <button onclick="validarYGuardarLicencia()" class="licencia-btn">Activar Licencia</button>
+    <button onclick="abrirPagoMercadoPago()" class="licencia-btn licencia-btn-mp">Comprar Licencia (Mercado Pago)</button>
+
+    <div id="licencia-mensaje" class="licencia-msg"></div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const SECRET_SEED = "GENESIS_S_SECRET_2026";
+
+    function verificarLicenciaJS(clave) {
+      if (!clave ||!clave.startsWith("GEN-")) return { valida: false, motivo: "Formato incorrecto." };
+      const partes = clave.split("-");
+      if (partes.length!== 5) return { valida: false, motivo: "Estructura no válida." };
+      const fechaStr = `${partes[1]}-${partes[2]}-${partes[3]}`;
+      const tokenCliente = partes[4];
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      const [year, month, day] = partes.slice(1, 4).map(Number);
+      const fechaExp = new Date(year, month - 1, day);
+      if (fechaExp < hoy) {
+        return { valida: false, motivo: "Licencia expiró el " + fechaStr };
+      }
+      if (typeof CryptoJS === "undefined") {
+        return { valida: false, motivo: "Error librerías." };
+      }
+      const rawData = `${fechaStr}-${SECRET_SEED}`;
+      const tokenCalculado = CryptoJS.SHA256(rawData).toString(CryptoJS.enc.Hex).substring(0, 12).toUpperCase();
+      if (tokenCliente === tokenCalculado) {
+        return { valida: true, expira: fechaStr };
+      } else {
+        return { valida: false, motivo: "Clave inválida." };
+      }
+    }
+
+    window.comprobarAcceso = function() {
+      const claveGuardada = localStorage.getItem("app_licencia_key");
+      const overlay = document.getElementById("licencia-overlay");
+      if (claveGuardada) {
+        const res = verificarLicenciaJS(claveGuardada);
+        if (res.valida) {
+          overlay.style.display = "none";
+          return;
+        }
+      }
+      overlay.style.display = "flex";
+    };
+
+    window.validarYGuardarLicencia = function() {
+      const inputKey = document.getElementById("licencia-key-input").value.trim().toUpperCase();
+      const msgDiv = document.getElementById("licencia-mensaje");
+      const res = verificarLicenciaJS(inputKey);
+      if (res.valida) {
+        localStorage.setItem("app_licencia_key", inputKey);
+        msgDiv.style.color = "#22c55e";
+        msgDiv.innerText = "¡Licencia válida hasta " + res.expira + "! Entrando...";
+        setTimeout(() => {
+          document.getElementById("licencia-overlay").style.display = "none";
+        }, 800);
+      } else {
+        msgDiv.style.color = "#ef4444";
+        msgDiv.innerText = res.motivo;
+      }
+    };
+
+    window.abrirPagoMercadoPago = function() {
+      const linkPagoMP = "https://mpago.la/tu-link-de-pago";
+      window.open(linkPagoMP, '_blank');
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", window.comprobarAcceso);
+    } else {
+      window.comprobarAcceso();
+    }
+  })();
+</script>
+</body>
+</html>
