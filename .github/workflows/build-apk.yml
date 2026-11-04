@@ -2,8 +2,6 @@ name: Build Presupuestos de Obra APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, "feature/**"]
 
 jobs:
   build:
