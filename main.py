@@ -103,13 +103,13 @@ class PresupuestosApp(App):
         layout.add_widget(etiqueta("PRESUPUESTOS DE OBRA", dp(68), "24sp"))
         layout.add_widget(etiqueta("Prototipo · funciona sin conexión", dp(38), "15sp", (0.72, 0.8, 0.9, 1)))
         layout.add_widget(etiqueta(
-            "Calcula materiales y mano de obra. Guarda tus presupuestos en este dispositivo.",
+            "Calcula materiales, costo total y mano de obra. Guarda tus presupuestos localmente.",
             dp(76), "16sp",
         ))
         layout.add_widget(boton("MAESTRO · sencillo", lambda *_: self.open_form("maestro")))
-        layout.add_widget(etiqueta("Cálculo de materiales, pago de peones y ganancia neta.", dp(58), "14sp", (0.72, 0.8, 0.9, 1)))
+        layout.add_widget(etiqueta("Cálculo de materiales, precios unitarios y ganancia neta.", dp(58), "14sp", (0.72, 0.8, 0.9, 1)))
         layout.add_widget(boton("ARQUITECTO PRO", lambda *_: self.open_form("arquitecto"), color=(0.16, 0.42, 0.34, 1)))
-        layout.add_widget(etiqueta("Incluye utilidad, IVA separado, cliente y datos de obra.", dp(58), "14sp", (0.72, 0.8, 0.9, 1)))
+        layout.add_widget(etiqueta("Incluye utilidad sobre costo total, IVA, cliente y obra.", dp(58), "14sp", (0.72, 0.8, 0.9, 1)))
         layout.add_widget(boton("Presupuestos guardados", self.show_history, color=PANEL))
         layout.add_widget(etiqueta(
             "Las cantidades son estimaciones editables; verifica especificaciones y precios de tu zona.",
@@ -128,15 +128,28 @@ class PresupuestosApp(App):
         layout.clear_widgets()
         nombre = "ARQUITECTO PRO" if version == "arquitecto" else "MAESTRO"
         layout.add_widget(etiqueta(nombre, dp(52), "22sp"))
+        
+        # Medidas
         layout.add_widget(etiqueta("MEDIDAS DE LA BARDA", dp(32), "15sp", (0.5, 0.76, 0.95, 1)))
-
         pref = self._best_preferences(version)
         fields = [
             ("largo", "Largo de la barda (m)", "10"),
             ("alto", "Altura (m)", "2.5" if version == "arquitecto" else "2"),
             ("pago_peon", "Pago diario por peón (MXN)", pref.get("pago_peon", "400" if version == "arquitecto" else "350")),
-            ("cobro_m2", "Cobro de mano de obra por m² (MXN)", pref.get("cobro_m2", "380" if version == "arquitecto" else "300")),
+            ("cobro_m2", "Cobro mano de obra por m² (MXN)", pref.get("cobro_m2", "380" if version == "arquitecto" else "300")),
         ]
+        
+        # Precios unitarios
+        layout.add_widget(etiqueta("PRECIOS UNITARIOS DE MATERIALES (MXN)", dp(32), "15sp", (0.5, 0.76, 0.95, 1)))
+        fields += [
+            ("precio_block", "Precio por pieza de block", "15"),
+            ("precio_cemento", "Precio por saco de cemento", "220"),
+            ("precio_arena", "Precio por m³ de arena", "600"),
+            ("precio_varilla", "Precio por tramo de varilla 3/8", "120"),
+            ("precio_alambre", "Precio por kg de alambre recocido", "35"),
+        ]
+
+        # Datos extra para versión Arquitecto
         if version == "arquitecto":
             layout.add_widget(etiqueta("DATOS DEL PRESUPUESTO", dp(32), "15sp", (0.5, 0.76, 0.95, 1)))
             fields += [
@@ -198,7 +211,6 @@ class PresupuestosApp(App):
         self.sm.current = "resultado"
 
     def _learn_preferences(self, version, result):
-        # Sugerencias locales por frecuencia; no se presentan como predicciones de una IA entrenada.
         data = self.preferences.setdefault(version, {})
         for source_key, preference_key in (("pago_peon_diario", "pago_peon"), ("cobro_m2", "cobro_m2")):
             choices = data.setdefault(preference_key, {})
@@ -220,26 +232,33 @@ class PresupuestosApp(App):
             layout.add_widget(etiqueta(f"Cliente: {self.latest['cliente']}", dp(32), "15sp"))
         if self.latest.get("obra"):
             layout.add_widget(etiqueta(f"Obra: {self.latest['obra']}", dp(32), "15sp"))
+            
         rows = [
             ("Área de muro", f"{result['area_m2']:,.2f} m²"),
-            ("Block (incluye 5% merma)", f"{result['piezas_block']:,} piezas"),
-            ("Cemento gris", f"{result['sacos_cemento']:,.1f} sacos"),
-            ("Arena", f"{result['m3_arena']:,.2f} m³"),
-            ("Varilla 3/8 (tramos de 6 m)", f"{result['tramos_varilla']:,.1f} tramos"),
-            ("Alambre recocido", f"{result['kg_alambre']:,.1f} kg"),
+            ("Block (incluye 5% merma)", f"{result['piezas_block']:,} pzas ({self._money(result['costo_block'])})"),
+            ("Cemento gris", f"{result['sacos_cemento']:,.1f} sacos ({self._money(result['costo_cemento'])})"),
+            ("Arena", f"{result['m3_arena']:,.2f} m³ ({self._money(result['costo_arena'])})"),
+            ("Varilla 3/8", f"{result['tramos_varilla']:,.1f} tramos ({self._money(result['costo_varilla'])})"),
+            ("Alambre recocido", f"{result['kg_alambre']:,.1f} kg ({self._money(result['costo_alambre'])})"),
+            ("TOTAL MATERIALES", self._money(result["costo_total_materiales"])),
             ("Días estimados", f"{result['dias_trabajo']:,.1f}"),
-            ("Gasto total peones", self._money(result["gasto_total_peones"])),
+            ("Gasto peones (interno)", self._money(result["gasto_total_peones"])),
             ("Cobro mano de obra", self._money(result["cobro_mano_obra"])),
+            ("SUBTOTAL (Mat. + M.O.)", self._money(result["costo_total_obra"])),
         ]
+        
         if self.version == "arquitecto":
             rows.extend([
-                ("Utilidad", self._money(result["monto_utilidad"])),
+                ("Utilidad aplicada", self._money(result["monto_utilidad"])),
                 ("IVA (separado)", self._money(result["monto_iva"])),
                 ("TOTAL CON IVA", self._money(result["total_con_iva"])),
             ])
-        rows.append(("Ganancia neta estimada", self._money(result["ganancia_neta"])))
+        else:
+            rows.append(("Ganancia neta estimada", self._money(result["ganancia_neta"])))
+
         for name, value in rows:
             layout.add_widget(etiqueta(f"{name}:  {value}", dp(34), "15sp"))
+            
         layout.add_widget(etiqueta(
             "Estimación orientativa. Confirma rendimientos, estructura, precios locales e impuestos.",
             dp(72), "13sp", (0.95, 0.78, 0.44, 1),
@@ -273,7 +292,7 @@ class PresupuestosApp(App):
             layout.add_widget(etiqueta("Todavía no hay presupuestos guardados.", dp(50), "15sp"))
         for record in self.records:
             res = record["resultado"]
-            detail = res["total_con_iva"] if record["version"] == "arquitecto" else res["cobro_mano_obra"]
+            detail = res["total_con_iva"] if record["version"] == "arquitecto" else res["costo_total_obra"]
             title = "ARQUITECTO PRO" if record["version"] == "arquitecto" else "MAESTRO"
             layout.add_widget(etiqueta(
                 f"{title} · {record.get('obra') or 'Barda'} · {record['fecha']} · {self._money(detail)}",
