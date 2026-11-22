@@ -180,6 +180,7 @@ class PresupuestosApp(App):
 
         layout.add_widget(boton("CALCULAR PRESUPUESTO", self.calculate))
         layout.add_widget(boton("Volver al inicio", lambda *_: setattr(self.sm, "current", "inicio"), color=PANEL))
+        self.sm.current = "formulario"
 
     def _best_preferences(self, version):
         data = self.preferences.get(version, {})
